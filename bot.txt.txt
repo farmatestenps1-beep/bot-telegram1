@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 
 TOKEN = '9202776983:AAFWVbMzPUXOirHJqgR8MXzX-TNwENspjnE'
-ADMIN_ID = 6595022688  
+ADMIN_ID = 6595022688
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -22,14 +22,17 @@ def enviar_menu(message):
         f"Escolha uma opção no menu abaixo:"
     )
     
-    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup = types.InlineKeyboardMarkup()
     btn_compra = types.InlineKeyboardButton("🛒 Compra Aleatória", callback_data="compra_aleatoria")
     btn_recarga = types.InlineKeyboardButton("💳 Recarregar", callback_data="recarga")
     btn_trocas = types.InlineKeyboardButton("🔄 Trocas & Testador", callback_data="trocas")
     btn_bin = types.InlineKeyboardButton("🔍 Consultar Bin", callback_data="consultar_bin")
     btn_nivel = types.InlineKeyboardButton("⭐ Consultar Nível", callback_data="consultar_nivel")
     
-    markup.add(btn_compra, btn_recarga, btn_trocas, btn_bin, btn_nivel)
+    # Adicionando botões em pares (linha por linha)
+    markup.add(btn_compra, btn_recarga)
+    markup.add(btn_trocas, btn_bin)
+    markup.add(btn_nivel)
     
     if user_id == ADMIN_ID:
         btn_admin = types.InlineKeyboardButton("🛠️ Painel Admin", callback_data="painel_admin")
@@ -45,14 +48,17 @@ def callback_query(call):
         
     elif call.data == "recarga":
         bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup = types.InlineKeyboardMarkup()
         markup.add(
             types.InlineKeyboardButton("R$ 20", callback_data="rec_20"),
-            types.InlineKeyboardButton("R$ 30", callback_data="rec_30"),
-            types.InlineKeyboardButton("R$ 50", callback_data="rec_50"),
-            types.InlineKeyboardButton("R$ 100", callback_data="rec_100"),
-            types.InlineKeyboardButton("Outro Valor", callback_data="rec_outro")
+            types.InlineKeyboardButton("R$ 30", callback_data="rec_30")
         )
+        markup.add(
+            types.InlineKeyboardButton("R$ 50", callback_data="rec_50"),
+            types.InlineKeyboardButton("R$ 100", callback_data="rec_100")
+        )
+        markup.add(types.InlineKeyboardButton("Outro Valor", callback_data="rec_outro"))
+        
         bot.send_message(call.message.chat.id, "💳 Escolha o valor da recarga (Mínimo R$ 20,00):", reply_markup=markup)
         
     elif call.data.startswith("rec_"):
@@ -78,10 +84,12 @@ def callback_query(call):
     elif call.data == "painel_admin":
         if call.from_user.id == ADMIN_ID:
             bot.answer_callback_query(call.id)
-            markup = types.InlineKeyboardMarkup(row_width=2)
+            markup = types.InlineKeyboardMarkup()
             markup.add(
                 types.InlineKeyboardButton("📦 Adicionar Cards", callback_data="adm_add_cards"),
-                types.InlineKeyboardButton("📊 Consultar Estoque", callback_data="adm_estoque"),
+                types.InlineKeyboardButton("📊 Consultar Estoque", callback_data="adm_estoque")
+            )
+            markup.add(
                 types.InlineKeyboardButton("🔑 Configurar Pix", callback_data="adm_pix"),
                 types.InlineKeyboardButton("🚫 Bloquear/Desbloquear", callback_data="adm_bloquear")
             )
@@ -89,5 +97,6 @@ def callback_query(call):
         else:
             bot.answer_callback_query(call.id, "Acesso negado!", show_alert=True)
 
-print("Bot rodando...")
-bot.infinity_polling()
+if __name__ == "__main__":
+    print("Bot rodando...")
+    bot.infinity_polling()
